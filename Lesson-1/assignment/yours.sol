@@ -7,7 +7,7 @@ contract Payroll {
     uint constant payrollDuraton = 10 seconds;
     uint lastPayDay = now;
     
-    function setAddress(){
+    function Payroll(){
         frank = msg.sender;
     }
 
@@ -43,7 +43,6 @@ contract Payroll {
         if(nextPayDay>now){
             revert();
         }
-        
         lastPayDay = nextPayDay;
         frank.transfer(salary);
     }
