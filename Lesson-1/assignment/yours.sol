@@ -1,5 +1,3 @@
-/*作业请提交在这个目录下*/
-
 pragma solidity ^0.4.14;
 
 contract Payroll {
@@ -10,19 +8,16 @@ contract Payroll {
     address public employee = 0x0;
     uint public lastPayday = now;
     
-	//调试事件
     event TransferSalary(uint salary);
     
     function Payroll() {
         owner = msg.sender;
     }
     
-	 
-    //设置雇员收款地址
-    function setEmployeeAddress(address e) {
-        require(msg.sender == owner);
-        
-        if (0x0  == e ){
+    function updateEmployeeSalary(address e, uint  s) {
+	    require(msg.sender == owner);
+		
+		if (0x0  == e ){
             revert();
         }
         
@@ -35,28 +30,11 @@ contract Payroll {
             }
         }
         
-        employee = e;
-        lastPayday = now;
-        
-    }
-    
-   //设置薪水
-   function setSalary( uint  s) {
-        require(msg.sender == owner);
-        
-        //清算给上个地址
-        if( 0x0 != employee ) {
-            uint payment = salary * (now - lastPayday) / payDuration;
-            if (payment > 0 && hasEnoughtFund() ) {
-                employee.transfer(payment);
-                TransferSalary(payment);
-            }
-        }
-        
+		employee = e;
         salary = s * 1 ether;
         lastPayday = now;
-    }
-    
+	
+	}
     
     //1 给合约账户充值 2 查看合约余额
     function addFund() payable returns (uint) {
