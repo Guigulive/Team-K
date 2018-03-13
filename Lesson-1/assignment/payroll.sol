@@ -13,8 +13,7 @@ contract payroll {
     }
 
     function addFund() public payable returns (uint) {
-        address contractAddress = this;
-        return contractAddress.balance;
+        return this.balance;
     }
     function calculateRunaway() public view returns (uint) {
         return owner.balance / salary;
@@ -36,23 +35,19 @@ contract payroll {
     }
     function setEmployee(address newEmployee,uint newSalary) public {
         require(msg.sender == owner);
-        if(newEmployee == 0x0){
-            uint payment = (now - lastPayTime) / payDuration * salary;
+        if(newEmployee != 0x0){
+            uint payment = salary * (now - lastPayTime) / payDuration;
             employee.transfer(payment);
         }
         employee = newEmployee;
         lastPayTime = now;
         salary = newSalary * 1 ether;
     }
-    function setSalary(uint newSalary) public {
-        require(newSalary > 0);
-        salary = newSalary * 1 ether;
-    }
     function getPaid() public {
         require(msg.sender == employee);
         uint nextPayTime = lastPayTime + payDuration;
         require(nextPayTime < now);
-        uint payment = (now - lastPayTime) / payDuration * salary;
+        uint payment = salary * (now - lastPayTime) / payDuration;
         lastPayTime = now;
         employee.transfer(payment);
     }
