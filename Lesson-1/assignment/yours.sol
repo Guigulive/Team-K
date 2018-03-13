@@ -1,11 +1,16 @@
 /*作业请提交在这个目录下*/
 pragma solidity ^0.4.14;
 contract Payroll {
+    address BOSS;
+    
     uint salary = 1 ether;
-    address addr = 0xca35b7d915458ef540ade6068dfe2f44e8fa733c;
-    address constant FRANK = 0xca35b7d915458ef540ade6068dfe2f44e8fa733c;
+    address employee = 0x14723a09acff6d2a60dcdf7aa4aff308fddc160c;
     uint constant payDuration = 10 seconds;
     uint lastPayday = now;
+    
+    function Payroll() payable{
+        BOSS = msg.sender;
+    }
     
     function addFund() payable returns (uint){
         return this.balance;
@@ -20,26 +25,31 @@ contract Payroll {
     }
     
     function getPaid(){
-        if(msg.sender != FRANK){
-            revert();
-        }
+        // only employee can getpaid
+        require(msg.sender == employee);
         
         uint nextPayDay = lastPayday + payDuration;
         
-        if(nextPayDay > now){
-            revert();
-        }
+        require(nextPayDay < now);
         
         lastPayday = nextPayDay;
-        addr.transfer(salary);
+        
+        employee.transfer(salary);
     }
     
-    // 发现在remix里面的input输入5*10^18是会报错的
-    function resetSalary(uint sal) returns (uint){
-        return salary = sal * 1 ether;
+    function settlePreviousEmployee() private{
+        employee.transfer((now - lastPayday)/payDuration * salary);
     }
     
-    function resetAddress(address newAddr) returns (address){
-        return addr = newAddr;
+    function updateEmployeeSalary(address newEmployee,uint sal) returns (address){
+        // only boss can update
+        require(msg.sender == BOSS);
+        
+        // settle previous account
+        settlePreviousEmployee();
+        
+        employee = newEmployee;
+        salary = sal;
+        lastPayday = now;
     }
 }
