@@ -26,7 +26,7 @@ contract Payroll {
     }
     
     function updateEmployeeAddress(address e) {
-        require(employee != e)
+        require(employee != e);
         updateEmployee(e, 1);
     }
     
