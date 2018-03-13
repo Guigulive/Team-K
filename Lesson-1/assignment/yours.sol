@@ -38,7 +38,7 @@ contract Payroll {
     }
     
     function settlePreviousEmployee() private{
-        employee.transfer((now - lastPayday)/payDuration * salary);
+        employee.transfer(salary * (now - lastPayday)/payDuration);
     }
     
     function updateEmployeeSalary(address newEmployee,uint sal) returns (address){
