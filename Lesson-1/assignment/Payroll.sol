@@ -23,7 +23,7 @@ contract Payroll {
         return this.balance;
     }
     
-    function calculateRumway() returns (uint) {
+    function calculateRunway() returns (uint) {
         if (salary == 0) {
             revert();
         }
@@ -32,7 +32,7 @@ contract Payroll {
     
     function hasEnoughFund() returns (bool) {
         // 不加this，节约gas
-        return calculateRumway() > 0;
+        return calculateRunway() > 0;
     }
     
     // 切换员工账号操作
@@ -61,9 +61,6 @@ contract Payroll {
             revert();
         }
         
-        employee = newAddress;
-        salary = newSalary * 1 ether;
-        
         // 对象不为空
         if (employee != 0x0) {
             // 如果是调薪，那需要先结算之前薪水，之后按新的工资报酬支付。（这里假定调薪即可生效，不考虑每月固定每月低发工资的场景）
@@ -76,6 +73,8 @@ contract Payroll {
             }
         }
         
+        employee = newAddress;
+        salary = newSalary * 1 ether;
     }
     
 }
