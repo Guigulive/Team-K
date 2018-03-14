@@ -13,12 +13,20 @@ contract Payroll {
     uint lastPayday = now;
 
 
-	function setEmployeeAddress(address newAddress) {
+  function setEmployeeAddress(address newAddress) {
 	    //只有老板frank可以修改员工地址
 	    if(msg.sender != frank || newAddress == 0x0){
 	        revert();
 	    }
-        employee = newAddress;
+      //修改地址前应该按旧地址支付一下之前未领薪水
+      if (hasEnoughtFund() && employee != 0x0) {
+         uint payment = salary * (now - lastPayday) / payDuration;
+         lastPayday = now;
+         employee.transfer(payment);
+      } else {
+         revert();
+      }
+      employee = newAddress;
     }
 
     function setEmployeeSalary(uint s) {
@@ -26,7 +34,15 @@ contract Payroll {
         if(msg.sender != frank || s == 0){
               revert();
         }
-        salary = s;
+        //修改薪水前应该按旧工资支付一下之前未领薪水
+        if (hasEnoughtFund() && employee != 0x0) {
+           uint payment = salary * (now - lastPayday) / payDuration;
+           lastPayday = now;
+           employee.transfer(payment);
+        } else {
+           revert();
+        }
+        salary = s * 1 ether;
     }
 
 
@@ -48,8 +64,8 @@ contract Payroll {
 
     //员工自己获取薪水
     function getPaid() {
-        //检查地址是否有效：1，地址必须是员工；2，员工地址不能为空
-        if(msg.sender != employee || employee == 0x0){
+        //检查地址是否有效：地址必须是员工
+        if(msg.sender != employee){
             revert();
         }
 
