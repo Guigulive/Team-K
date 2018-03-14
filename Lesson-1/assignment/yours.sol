@@ -25,16 +25,6 @@ contract Payroll {
         lastPayday = now;
     }
     
-    function updateEmployeeAddress(address e) {
-        require(employee != e);
-        updateEmployee(e, 1);
-    }
-    
-    function updateEmployeeSalary(uint s) {
-        require(s != 1);
-        updateEmployee(employee, s);
-    }
-    
     function addFund() payable returns (uint) {
         return this.balance;
     }
