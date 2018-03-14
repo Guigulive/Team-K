@@ -19,6 +19,24 @@ contract Payroll {
 	        revert();
 	    }
       //修改地址前应该按旧地址支付一下之前未领薪水
+      paymentOfArrears();
+      //设置员工新地址
+      employee = newAddress;
+  }
+
+  function setEmployeeSalary(uint s) {
+        //只有老板frank可以修改员工薪水
+        if(msg.sender != frank || s == 0){
+              revert();
+        }
+        //修改薪水前应该按旧工资支付一下之前未领薪水
+        paymentOfArrears();
+        //设置员工新薪水
+        salary = s * 1 ether;
+    }
+
+    functon paymentOfArrears() {
+      // 支付一下之前未领薪水
       if (hasEnoughtFund() && employee != 0x0) {
          uint payment = salary * (now - lastPayday) / payDuration;
          lastPayday = now;
@@ -26,25 +44,7 @@ contract Payroll {
       } else {
          revert();
       }
-      employee = newAddress;
     }
-
-    function setEmployeeSalary(uint s) {
-        //只有老板frank可以修改员工薪水
-        if(msg.sender != frank || s == 0){
-              revert();
-        }
-        //修改薪水前应该按旧工资支付一下之前未领薪水
-        if (hasEnoughtFund() && employee != 0x0) {
-           uint payment = salary * (now - lastPayday) / payDuration;
-           lastPayday = now;
-           employee.transfer(payment);
-        } else {
-           revert();
-        }
-        salary = s * 1 ether;
-    }
-
 
     //payable: 表明调用函数可以接受以太币
     function addFund() payable returns (uint) {
