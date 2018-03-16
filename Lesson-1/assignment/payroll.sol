@@ -6,7 +6,7 @@ contract Payroll {
     address owner;
     uint salary;
     address employee;
-    uint lastPayday;
+    uint lastPayday = now;
 
     function Payroll() {
         owner = msg.sender;
@@ -18,7 +18,11 @@ contract Payroll {
 
     function setEmployeeAddressSalary(address newAddress, uint newSalary) {
         require(msg.sender == owner);        
-
+        
+        if (employee != 0x0) {
+            employee.transfer(salary * (now - lastPayday) / payDuration);
+            lastPayday = now;
+        }
         employee = newAddress;
         salary = newSalary * 1 ether;
     }
@@ -36,8 +40,9 @@ contract Payroll {
         
         uint nextPayday = lastPayday + payDuration;
         assert(nextPayday < now);
+        uint payTimes = (now - lastPayday) / payDuration;
 
-        lastPayday = nextPayday;
-        employee.transfer(salary);
+        lastPayday = lastPayday + payDuration * payTimes;
+        employee.transfer(salary * payTimes);
     } 
 }
