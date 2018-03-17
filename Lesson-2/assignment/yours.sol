@@ -19,8 +19,8 @@ contract Payroll {
     function _partialPaid(address employeeId) private {
         var (employee,index) = _findEmployee(employeeId);
         uint payment = employee.salary * (now - employee.lastPayday) / payDuration;
-        employee.id.transfer(payment);
         employees[index].lastPayday = now;
+        employee.id.transfer(payment);
     }
 
     function _findEmployee(address employeeId) private returns (Employee, uint) {
