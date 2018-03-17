@@ -1,4 +1,8 @@
 /*作业请提交在这个目录下*/
+/*
+* 优化想法: 优化之前gas呈线性增长,原因就是随着employees长度增加,for循环次数增加。
+* 改进策略就是将totalSalary作为全局变量,其值的变化要在增删改employees的场景下随之更新。
+*/
 pragma solidity ^0.4.14;
 
 contract Payroll {
@@ -36,7 +40,7 @@ contract Payroll {
     function addEmployee(address employeeId, uint s) {
         require(msg.sender == owner);
         var (employee, index) =  _findEmployee(employeeId);
-        assert(employee.id != 0x0);
+        assert(employee.id == 0x0);
         
         uint salary = s * 1 ether;
         totalSalary += salary;
