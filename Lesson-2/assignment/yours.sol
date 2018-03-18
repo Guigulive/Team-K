@@ -16,10 +16,8 @@ contract Payroll {
         owner = msg.sender;
     }
 
-    function _partialPaid(address employeeId) private {
-        var (employee,index) = _findEmployee(employeeId);
+    function _partialPaid(Employee employee) private {
         uint payment = employee.salary * (now - employee.lastPayday) / payDuration;
-        employees[index].lastPayday = now;
         employee.id.transfer(payment);
     }
 
@@ -29,9 +27,10 @@ contract Payroll {
                 return (employees[i],i);
             }
         }
+        return (Employee(0,0,0),0);
     }
 
-    function addEmployee(address employeeId, uint salary) {
+    function addEmployee(address employeeId, uint salary) public {
         require(employeeId != 0x0);
         require(salary > 0);
         var (employee,index) = _findEmployee(employeeId);
@@ -40,33 +39,33 @@ contract Payroll {
         totalSalary += salary * 1 ether;
     }
 
-    function removeEmployee(address employeeId) {
+    function removeEmployee(address employeeId) public {
         var (employee,index) = _findEmployee(employeeId);
         assert(employee.id != 0x0);
-        _partialPaid(employeeId);
+        _partialPaid(employee);
         delete(employees[index]);
         employees[index] = employees[employees.length-1];
         employees.length -= 1;
         totalSalary -= employee.salary;
     }
 
-    function updateEmployee(address employeeId, uint salary) {
+    function updateEmployee(address employeeId, uint salary) public {
         require(employeeId != 0x0);
         var (employee,index) = _findEmployee(employeeId);
         assert(employee.id != 0x0);
         totalSalary -= employee.salary;
-        _partialPaid(employeeId);
+        _partialPaid(employee);
         employees[index].salary = salary * 1 ether;
         employees[index].lastPayday = now;
         totalSalary += salary * 1 ether;
     }
 
     function addFund() public payable returns (uint) {
-        return this.balance;
+        return address(this).balance;
     }
 
     function calculateRunway() public view returns (uint) {
-        return this.balance / totalSalary;
+        return address(this).balance / totalSalary;
     }
 
     function hasEnoughFund() public view returns (bool) {
@@ -74,6 +73,8 @@ contract Payroll {
     }
 
     function getPaid() public {
-        _partialPaid(msg.sender);
+        var (employee,index) = _findEmployee(msg.sender);
+        _partialPaid(employee);
+        employees[index].lastPayday = now;
     }
 }
