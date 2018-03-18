@@ -74,6 +74,7 @@ contract Payroll {
 
     function getPaid() public {
         var (employee,index) = _findEmployee(msg.sender);
+        require(employee.id != 0x0);
         _partialPaid(employee);
         employees[index].lastPayday = now;
     }
