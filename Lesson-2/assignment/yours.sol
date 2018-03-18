@@ -21,7 +21,7 @@ contract Payroll {
     }
     
     function _partialPaid(Employee employee) private {
-        uint payment = employee.salary * (now - employee.lastPayday) * payDuration;
+        uint payment = employee.salary * (now - employee.lastPayday) / payDuration;
         employee.id.transfer(payment);
     }
     
