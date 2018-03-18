@@ -1,0 +1,114 @@
+pragma solidity ^0.4.14;
+
+/*
+ * Payroll
+ * 
+ * @author 丰寅峰-102-PeerlessFYF Date 2018-03-11
+ */
+contract Payroll {
+    
+    address owner;
+    
+    // 定义结构对象
+    struct Employee {
+        address id;
+        uint salary;
+        uint lastPayday;
+    }
+    Employee[] employees;
+    
+    uint constant payDuration = 10 seconds; // 30 days;
+    
+    uint totalSalary = 0;
+    
+    function Payroll() {
+        owner = msg.sender;
+    }
+    
+    // 内部私有方法
+    function _partialPaid(Employee employee) private {
+        // 先乘后除，因为solidity里除是取整的
+        uint poyment = employee.salary * (now - employee.lastPayday) / payDuration;
+        employee.id.transfer(poyment);
+    }
+    
+    // 内部私有方法  returns (Employee storage, uint) 
+    function _findEmployee(address employeeId) private returns (Employee, uint) { // 多返回值
+        for (uint i = 0; i < employees.length; i++) {
+            if (employees[i].id == employeeId) {
+                return (employees[i], i);
+            }
+        }
+    }
+    
+    function addEmployee(address employeeId, uint salary) {
+        require(msg.sender == owner);
+        var (employee, index) =  _findEmployee(employeeId);
+        assert(employee.id == 0x0);
+        
+        uint s = salary * 1 ether;
+        totalSalary += s;
+        employees.push(Employee(employeeId, s, now));
+    }
+    
+    function removeEmployee(address employeeId) {
+        require(msg.sender == owner);
+        var (employee, index) =  _findEmployee(employeeId); // 多返回值
+        assert(employee.id != 0x0);
+        
+        _partialPaid(employee);
+        totalSalary -= employee.salary;
+        
+        // 用deleta删除数组对象，最后一个元素补齐，数组长度-1
+        delete employees[index];
+        employees[index] = employees[employees.length - 1];
+        employees.length -= 1;
+    }
+    
+    function updateEmployee(address employeeId, uint salary) {
+        require(msg.sender == owner);
+        var (employee, index) =  _findEmployee(employeeId);
+        assert(employee.id != 0x0);
+        
+        _partialPaid(employee);
+        uint s = salary * 1 ether;
+        
+        // employee.salary = salary * 1 ether;
+        // employee.lastPayday = now;
+        // 直接更新storage存储上的值
+        employees[index].salary = s;
+        employees[index].lastPayday = now;
+        
+        totalSalary += (s - employee.salary);
+    }
+    
+    // 函数具有钱的功能用payable关键字
+    function addFund() payable returns (uint) {
+        return this.balance;
+    }
+    
+    function calculateRunway() returns (uint) {
+        // assert(totalSalary == 0);
+        return this.balance / totalSalary;
+    }   
+    
+    function hasEnoughFund() returns (bool) {
+        // 不加this，节约gas
+        return calculateRunway() > 0;
+    }
+    
+    // 切换员工账号操作
+    function getPaid() {
+        var (employee, index) = _findEmployee(msg.sender);
+        assert(employee.id != 0x0);
+        
+        uint nextPayDay = employee.lastPayday + payDuration;
+        assert(nextPayDay < now);
+        
+        // employees.lastPayday = nextPayDay;
+        // 直接更新storage存储上的值
+        employees[index].lastPayday = nextPayDay;
+        employee.id.transfer(employee.salary);
+    }
+    
+}
