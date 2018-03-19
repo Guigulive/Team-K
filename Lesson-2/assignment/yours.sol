@@ -37,6 +37,7 @@ contract Payroll {
                 return (employees[i], i);
             }
         }
+		return (Employee(0,0,0), 0);
     }
     
     function addEmployee(address employeeId, uint salary) {
@@ -56,7 +57,7 @@ contract Payroll {
         assert(employee.id != 0x0);
         
         _partialPaid(employee);
-        totalSalary -= employee.salary  * 1 ether;
+        totalSalary -= employee.salary;
         
         delete employees[index];
         employees[index] = employees[employees.length -1];
@@ -70,11 +71,11 @@ contract Payroll {
         assert(employee.id != 0x0);
         
         _partialPaid(employee);
-        totalSalary-=employee.salary  * 1 ether;
+        totalSalary -= employee.salary;
         
         employees[index].salary = salary * 1 ether;
         employees[index].lastPayday = now;
-        totalSalary += employee.salary  * 1 ether;
+        totalSalary += employees[index].salary;
 	}
     
     //1 给合约账户充值 2 查看合约余额
