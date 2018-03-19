@@ -70,13 +70,17 @@ contract Payroll {
                return (employees[i], i);
             }
         }
+        //因为存在一些情况不会自动返回0，比如需要返回的是storage类型时候
+        return (Employee(0,0,0),0);
     }
 
     function addEmployee(address employeeId, uint salary) {
         require(msg.sender == owner);
         var (employee, index) = _findEmployee(employeeId);
         assert(employee.id == 0x0);
+         // 往数组里添加员工
         employees.push(Employee(employeeId, salary * 1 ether, now));
+        // 计算totalSalary
         totalSalary += salary * 1 ether;
     }
 
@@ -85,7 +89,9 @@ contract Payroll {
         var (employee, index) = _findEmployee(employeeId);
         assert(employee.id != 0x0);
         _partialPaid(employee);
-        totalSalary -= employee.salary * 1 ether;
+        // 计算totalSalary
+        totalSalary -= employee.salary;
+        // 删除该员工
         delete employees[index];
         employees[index] = employees[employees.length - 1];
         employees.length -= 1;
@@ -95,8 +101,11 @@ contract Payroll {
         require(msg.sender == owner);
         var (employee, index) = _findEmployee(employeeId);
         assert(employee.id != 0x0);
+         // 先进行结算
          _partialPaid(employee);
+          // 计算totalSalary
         totalSalary += (employee.salary - salary);
+          // 调薪
         employees[index].salary = salary * 1 ether;
         employees[index].lastPayday = now;
     }
