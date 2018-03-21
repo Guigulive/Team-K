@@ -1,4 +1,6 @@
-/*作业请提交在这个目录下*/
+/*作业请提交在这个目录下
+第三题答案： Z K1 B K2 A C O
+*/
 pragma solidity ^0.4.14;
  +
  +import './SafeMath.sol';
