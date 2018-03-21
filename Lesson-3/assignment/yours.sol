@@ -25,16 +25,11 @@ contract Payroll is Ownable {
         _;
     }
 
-    function _partialPaid(Employee employee) private {
-        uint payment = employee.salary.mul(now.sub(employee.lastPayDay)).div(payDuration);
-        employee.id.transfer(payment);
-    }
-
-    function addEmployee(address employeeId, uint _salary) onlyOwner employeeNotExist(employeeId) {
+    function addEmployee(address employeeId, uint salary) onlyOwner employeeNotExist(employeeId) {
         var employee = employees[employeeId];
-        uint salary  = _salary.mul(1 ether);
-        employees[employeeId] = Employee({id: employeeId, salary: salary, lastPayDay: now});
-        totalSalary           = totalSalary.add(salary);
+        uint s = salary.mul(1 ether);
+        employees[employeeId] = Employee({id: employeeId, salary: s, lastPayDay: now});
+        totalSalary = totalSalary.add(s);
     }
 
     function removeEmployee(address employeeId) onlyOwner employeeExist(employeeId) {
@@ -50,15 +45,26 @@ contract Payroll is Ownable {
         assert(newSalary != employee.salary);
 
         _partialPaid(employee);
-        totalSalary         = totalSalary.sub(employee.salary).add(newSalary);
-        employee.salary     = newSalary;
+        totalSalary = totalSalary.sub(employee.salary).add(newSalary);
+        employee.salary = newSalary;
         employee.lastPayDay = now;
     }
-
-    function changePaymentAddress(address employeeNewId) employeeExist(msg.sender) employeeNotExist(employeeNewId) {
+    function changePaymentAddress(address employeeId) employeeExist(msg.sender) employeeNotExist(employeeId) {
         var employee = employees[msg.sender];
-        employees[employeeNewId] = Employee({id: employeeNewId, salary: employee.salary, lastPayDay: employee.lastPayDay});
+        employees[employeeId] = Employee({id: employeeId, salary: employee.salary, lastPayDay: employee.lastPayDay});
         delete employees[msg.sender];
+    }
+    function _partialPaid(Employee employee) private {
+        uint payment = employee.salary.mul(now.sub(employee.lastPayDay)).div(payDuration);
+        employee.id.transfer(payment);
+    }
+
+    function getPaid() employeeExist(msg.sender) {
+        var employee = employees[msg.sender];
+        uint nextPayDay = employee.lastPayDay.add(payDuration);
+        assert(nextPayDay < now);
+        employee.lastPayDay = nextPayDay;
+        employee.id.transfer(employee.salary);
     }
 
     function addFund() payable returns (uint) {
@@ -70,15 +76,6 @@ contract Payroll is Ownable {
     }
 
     function hasEnoughFund() returns (bool) {
-        return calculateRunway() > 0;
-    }
-
-    function getPaid() employeeExist(msg.sender) {
-        var employee    = employees[msg.sender];
-        uint nextPayDay = employee.lastPayDay.add(payDuration);
-        assert(nextPayDay < now);
-
-        employee.lastPayDay = nextPayDay;
-        employee.id.transfer(employee.salary);
+        return calculateRunway() >= 1;
     }
 }
