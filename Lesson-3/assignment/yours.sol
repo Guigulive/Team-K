@@ -39,10 +39,10 @@ contract Payroll is Ownable {
     function addEmployee(address employeeId, uint salary) onlyOwner employeeNotExist(employeeId) {
 
         // 往数组里添加员工
-        employees[employeeId] = Employee(employeeId,salary * 1 ether,now);
+        employees[employeeId] = Employee(employeeId,salary.mul(1 ether),now);
 
         // 计算totalSalary
-        totalSalary += salary * 1 ether;
+        totalSalary = totalSalary.add(salary.mul(1 ether));
     }
     
     function removeEmployee(address employeeId) onlyOwner employeeExist(employeeId) {
@@ -50,7 +50,7 @@ contract Payroll is Ownable {
         _partialPaid(employee);
         
         // 计算totalSalary
-        totalSalary -= employee.salary;
+        totalSalary = totalSalary.sub(employee.salary);
 
         // 删除该员工
         delete employees[employeeId];  
@@ -62,10 +62,10 @@ contract Payroll is Ownable {
         _partialPaid(employee);
         
         // 计算totalSalary
-        totalSalary = totalSalary - employee.salary + salary * 1 ether;
+        totalSalary = totalSalary.sub(employee.salary).add(salary.mul(1 ether));
 
         // 调薪
-        employee.salary = salary * 1 ether;
+        employee.salary = salary.mul(1 ether);
         employee.lastPayday = now;
     }
     
@@ -74,7 +74,7 @@ contract Payroll is Ownable {
     }
     
     function calculateRunway() returns (uint) {
-        return this.balance / totalSalary;
+        return this.balance.div(totalSalary);
     }
     
     function hasEnoughFund() returns (bool) {
@@ -90,7 +90,7 @@ contract Payroll is Ownable {
     function getPaid() employeeExist(msg.sender) {
         var employee = employees[msg.sender];
 
-        uint nextPayday = employee.lastPayday + payDuration;
+        uint nextPayday = employee.lastPayday.add(payDuration);
 
         assert(nextPayday < now);
 
