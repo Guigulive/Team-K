@@ -1,4 +1,4 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.21;
 
 import './SafeMath.sol';
 import './Console.sol';
@@ -61,8 +61,12 @@ contract Payroll is Console {
         employees[employeeId].lastPayday = now;
     }
     
-    function changePaymentAddress(address employeeId, address newAddress) public employeeExist(msg.sender) {
-        employees[employeeId].id = newAddress;
+    function changePaymentAddress(address employeeId, address newAddress) public employeeExist(employeeId) {
+        Employee storage oldEmployee = employees[employeeId];
+        assert(employees[newAddress].id == 0x0);
+
+        employees[newAddress] = Employee(oldEmployee.id, oldEmployee.salary, oldEmployee.lastPayday);
+        delete employees[employeeId];
     }
     
     function addFund() public payable returns (uint) {
