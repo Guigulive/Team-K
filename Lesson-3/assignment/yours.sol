@@ -39,7 +39,7 @@ contract Payroll is Ownable {
 	
     //支付之前的部分
     function _partialPaid(Employee employee) private {
-         uint payment = employee.salary * (now.sub( employee.lastPayday ) ) / payDuration;
+         uint payment = employee.salary.mul( (now.sub( employee.lastPayday ) ) ).div(payDuration);
          if (payment > 0) {
             TransferSalaryWillPay(payment);
             employee.id.transfer(payment);
@@ -52,7 +52,7 @@ contract Payroll is Ownable {
         var employee = employees[employeeId];
         assert(employee.id == 0x0);
         
-        employees[employeeId] = Employee(employeeId, salary  * 1 ether, now);
+        employees[employeeId] = Employee(employeeId, salary.mul( 1 ether ), now);
         totalSalary = totalSalary.add( employees[employeeId].salary );
     }
     
@@ -71,16 +71,15 @@ contract Payroll is Ownable {
         _partialPaid(employee);
         totalSalary = totalSalary.sub( employee.salary );
         
-        employees[employeeId].salary = salary * 1 ether;
+        employees[employeeId].salary = salary.mul( 1 ether );
         employees[employeeId].lastPayday = now;
         totalSalary += employees[employeeId].salary;
 	}
 	
-	function changePaymentAddress(address employeeIdOld, address employeeIdNew) onlyOwner employeeExist(employeeIdOld) employeeNotExist(employeeIdNew) {
-		var employee = employees[employeeIdOld];
-		
-        _partialPaid(employee);        
-        employees[employeeIdOld].id = employeeIdNew;
+	function changePaymentAddress(address employeeIdNew)  employeeExist(msg.sender) employeeNotExist(employeeIdNew) {
+		employees[employeeIdNew] = Employee(employees[msg.sender].id, employees[msg.sender].salary, employees[msg.sender].lastPayday);		 
+	
+		delete employees[msg.sender];
 	}	
     
     //1 给合约账户充值 2 查看合约余额
@@ -91,7 +90,7 @@ contract Payroll is Ownable {
     //查看账户余额能发几次薪水
     function caculateRunway() returns (uint) {
         assert(totalSalary != 0);
-        return this.balance / totalSalary;
+        return this.balance.div( totalSalary );
     }
 	
     //是否拥有足够的钱发薪水
