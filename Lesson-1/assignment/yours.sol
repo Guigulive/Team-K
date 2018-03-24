@@ -4,6 +4,8 @@ contract Payroll {
     
     uint salary ;
     address frank ;
+    address employee;
+    
     uint constant payrollDuraton = 10 seconds;
     uint lastPayDay = now;
     
@@ -12,15 +14,20 @@ contract Payroll {
     }
 
      function setAddress(address newAddress){
-        frank = newAddress;
+         if(msg.sender == frank){
+              employee = newAddress;
+         }
+       
     }
     
     function getAddress() returns(address){
-        return frank;
+        return employee;
     }
      
     function setSalary(uint money){
-        salary = money;
+        if(msg.sender == frank){
+            salary = money;
+        }
     }
     
     function getSalary() returns(uint){
@@ -44,7 +51,7 @@ contract Payroll {
             revert();
         }
         lastPayDay = nextPayDay;
-        frank.transfer(salary);
+        employee.transfer(salary);
     }
     
     
