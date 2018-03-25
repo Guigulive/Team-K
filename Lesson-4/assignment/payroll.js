@@ -8,7 +8,7 @@ contract('Payroll', function (accounts) {
             payRollInstance.addEmployee(accounts[1],1);
             return payRollInstance.employees.call(accounts[1]);
         }).then(function(employee){
-            assert().equal(employee[0],accounts[1],"employee:" + accounts[1] + " add failed.");
+            assert.equal(employee[0],accounts[1],"employee:" + accounts[1] + " add failed.");
         }).catch(function(err){
             console.log(err);
         });
